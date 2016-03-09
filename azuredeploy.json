@@ -85,8 +85,6 @@
         "GIWEBStorageAccountContainerName": "vhds",
         "GIWEBNicName": "[concat(parameters('GIWEBName'), 'NetworkInterface')]",
         "WEBName": "WEB",
-        "postgresScriptFolder": "[concat(parameters('projectName'), '/', 'CustomScripts')]",
-        "postgresScriptFileName": "postgres.ps1"
         
     },
     "resources": [
