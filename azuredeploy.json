@@ -179,7 +179,6 @@
               ],
               "securityRules": [
                 {
-                  {
                     "name": "default-allow-rdp",
                     "properties": {
                       "protocol": "Tcp",
@@ -190,7 +189,6 @@
                       "access": "Allow",
                       "priority": 1000,
                       "direction": "Inbound"
-                    }
                   }
                 }
               ]
