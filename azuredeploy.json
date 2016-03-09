@@ -1,0 +1,302 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Gl01Type": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "GIDBsrvName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "GIDBsrvAdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "GIDBsrvAdminPassword": {
+      "type": "securestring"
+    },
+    "GIDBsrvWindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    },
+    "GIWEBName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "GIWEBAdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "GIWEBAdminPassword": {
+      "type": "securestring"
+    },
+    "GIWEBWindowsOSVersion": {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "Windows-Server-Technical-Preview"
+      ]
+    },
+    "WEBDnsName": {
+      "type": "string",
+      "minLength": 1
+    }
+
+  },
+  "variables": {
+    "Gl01Name": "[concat('Gl01', uniqueString(resourceGroup().id))]",
+    "GINetPrefix": "10.0.0.0/16",
+    "GINetSubnet1Name": "Subnet-1",
+    "GINetSubnet1Prefix": "10.0.0.0/24",
+    "GINetSubnet2Name": "Subnet-2",
+    "GINetSubnet2Prefix": "10.0.1.0/24",
+    "GIDBsrvImagePublisher": "MicrosoftWindowsServer",
+    "GIDBsrvImageOffer": "WindowsServer",
+    "GIDBsrvOSDiskName": "GIDBsrvOSDisk",
+    "GIDBsrvVmSize": "Standard_D1",
+    "GIDBsrvVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
+    "GIDBsrvSubnetRef": "[concat(variables('GIDBsrvVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
+    "GIDBsrvStorageAccountContainerName": "vhds",
+    "GIDBsrvNicName": "[concat(parameters('GIDBsrvName'), 'NetworkInterface')]",
+    "GIWEBImagePublisher": "MicrosoftWindowsServer",
+    "GIWEBImageOffer": "WindowsServer",
+    "GIWEBOSDiskName": "GIWEBOSDisk",
+    "GIWEBVmSize": "Standard_D1",
+    "GIWEBVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
+    "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
+    "GIWEBStorageAccountContainerName": "vhds",
+    "GIWEBNicName": "[concat(parameters('GIWEBName'), 'NetworkInterface')]",
+    "WEBName": "WEB"
+
+  },
+  "resources": [
+    {
+      "name": "[variables('Gl01Name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "gl01"
+      },
+      "properties": {
+        "accountType": "[parameters('Gl01Type')]"
+      }
+    },
+    {
+      "name": "GINet",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "GINet"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('GINetPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('GINetSubnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('GINetSubnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('GINetSubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('GINetSubnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('GIDBsrvNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', 'GINet')]"
+      ],
+      "tags": {
+        "displayName": "GIDBsrvNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('GIDBsrvSubnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('GIDBsrvName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('Gl01Name'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('GIDBsrvNicName'))]"
+      ],
+      "tags": {
+        "displayName": "GIDBsrv"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('GIDBsrvVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('GIDBsrvName')]",
+          "adminUsername": "[parameters('GIDBsrvAdminUsername')]",
+          "adminPassword": "[parameters('GIDBsrvAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('GIDBsrvImagePublisher')]",
+            "offer": "[variables('GIDBsrvImageOffer')]",
+            "sku": "[parameters('GIDBsrvWindowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "GIDBsrvOSDisk",
+            "vhd": {
+              "uri": "[concat('http://', variables('Gl01Name'), '.blob.core.windows.net/', variables('GIDBsrvStorageAccountContainerName'), '/', variables('GIDBsrvOSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('GIDBsrvNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[variables('GIWEBNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', 'GINet')]",
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('WEBName'))]"
+      ],
+      "tags": {
+        "displayName": "GIWEBNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('GIWEBSubnetRef')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('WEBName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('GIWEBName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('Gl01Name'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('GIWEBNicName'))]"
+      ],
+      "tags": {
+        "displayName": "GIWEB"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('GIWEBVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('GIWEBName')]",
+          "adminUsername": "[parameters('GIWEBAdminUsername')]",
+          "adminPassword": "[parameters('GIWEBAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('GIWEBImagePublisher')]",
+            "offer": "[variables('GIWEBImageOffer')]",
+            "sku": "[parameters('GIWEBWindowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "GIWEBOSDisk",
+            "vhd": {
+              "uri": "[concat('http://', variables('Gl01Name'), '.blob.core.windows.net/', variables('GIWEBStorageAccountContainerName'), '/', variables('GIWEBOSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('GIWEBNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[variables('WEBName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "WEB"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('WEBDnsName')]"
+        }
+      }
+    }
+
+  ],
+  "outputs": {
+  }
+}
+
