@@ -55,14 +55,14 @@
                 "Windows-Server-Technical-Preview"
             ]
         },
-        "WEBDnsName": {
-            "type": "string",
-            "minLength": 1
-        }
-        
+      "WEBDnsName": {
+        "type": "string",
+        "minLength": 1
+      },
+      
     },
     "variables": {
-        "Gl01Name": "[concat('Gl01', uniqueString(resourceGroup().id))]",
+        "Gl01Name": "[concat('ginas', uniqueString(resourceGroup().id))]",
         "GINetPrefix": "10.0.0.0/16",
         "GINetSubnet1Name": "Subnet-1",
         "GINetSubnet1Prefix": "10.0.0.0/24",
@@ -89,13 +89,13 @@
     },
     "resources": [
         {
-            "name": "[variables('Gl01Name')]",
+            "name": "[tolower(variables('Gl01Name'))]",
             "type": "Microsoft.Storage/storageAccounts",
             "location": "[resourceGroup().location]",
             "apiVersion": "2015-06-15",
             "dependsOn": [ ],
             "tags": {
-                "displayName": "gl01"
+                "displayName": "ginasstorage"
             },
             "properties": {
                 "accountType": "[parameters('Gl01Type')]"
@@ -290,7 +290,7 @@
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('WEBDnsName')]"
+                    "domainNameLabel": "[toLower(parameters('WEBDnsName'))]"
                 }
             }
         }
