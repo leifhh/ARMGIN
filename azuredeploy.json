@@ -59,6 +59,25 @@
         "type": "string",
         "minLength": 1
       },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Auto-generated token to access _artifactsLocation"
+            }
+        },
+        "projectName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "Name of this project"
+            }
+        }
       
     },
     "variables": {
@@ -84,7 +103,9 @@
         "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
         "GIWEBStorageAccountContainerName": "vhds",
         "GIWEBNicName": "[concat(parameters('GIWEBName'), 'NetworkInterface')]",
-        "WEBName": "WEB"
+        "WEBName": "WEB",
+        "postgresScriptFolder": "[concat(parameters('projectName'), '/', 'CustomScripts')]",
+        "postgresScriptFileName": "postgres.ps1"
         
     },
     "resources": [
@@ -144,17 +165,35 @@
                 "displayName": "GIDBsrvNic"
             },
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[variables('GIDBsrvSubnetRef')]"
-                            }
-                        }
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAddress": "10.0.0.4",
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[variables('GIDBsrvSubnetRef')]"
                     }
-                ]
+                  }
+                }
+              ],
+              "securityRules": [
+                {
+                  {
+                    "name": "default-allow-rdp",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "3389",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1000,
+                      "direction": "Inbound"
+                    }
+                  }
+                }
+              ]
             }
         },
         {
@@ -201,7 +240,10 @@
                         }
                     ]
                 }
-            }
+            },
+            "resources": [
+                
+            ]
         },
         {
             "name": "[variables('GIWEBNicName')]",
@@ -216,21 +258,49 @@
                 "displayName": "GIWEBNic"
             },
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[variables('GIWEBSubnetRef')]"
-                            },
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('WEBName'))]"
-                            }
-                        }
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAddress": "10.0.0.5",
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[variables('GIWEBSubnetRef')]"
+                    },
+                    "publicIPAddress": {
+                      "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('WEBName'))]"
                     }
-                ]
-            }
+                  }
+                }
+              ],
+              "securityRules": [
+                {
+                  "name": "allow-443-inbound-any",
+                  "properties": {
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "443",
+                    "sourceAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1100,
+                    "direction": "Inbound"
+                  }
+                },
+                {
+                  "name": "default-allow-rdp",
+                  "properties": {
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "3389",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1000,
+                    "direction": "Inbound"
+                  }
+                }
+                  ]
+                }
         },
       {
         "name": "[parameters('GIWEBName')]",
