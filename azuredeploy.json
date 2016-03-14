@@ -58,6 +58,11 @@
     "WEBDnsName": {
       "type": "string",
       "minLength": 1
+    },
+    "siteLocation": {
+      "type": "string",
+      "defaultValue": "North Europe",
+      "allowedValues": [ "East US", "West US", "West Europe", "Noth Europe", "East Asia", "Southeast Asia" ]
     }
   },
     "variables": {
