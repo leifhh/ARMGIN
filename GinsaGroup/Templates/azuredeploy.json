@@ -15,7 +15,7 @@
     },
     "GinasDatabaseServerName": {
       "type": "string",
-      "defaultValue":"ginasdbsrv",
+      "defaultValue": "ginasdbsrv",
       "minLength": 1
     },
     "GinasDatabaseServerAdminUserName": {
@@ -36,7 +36,7 @@
       ]
     },
     "GinasAppServerName": {
-      "defaultValue":"ginasappsrv",
+      "defaultValue": "ginasappsrv",
       "type": "string",
       "minLength": 1
     },
@@ -77,6 +77,14 @@
       "minLength": 2,
       "maxLength": 4,
       "defaultValue": "443"
+    },
+    "PostgressUsername": {
+      "type": "string",
+      "defaultValue": "postgress"
+    },
+    "PostgressPassword": {
+      "type": "string",
+      "defaultValue": "ChangeMe!"
     }
 
   },
@@ -250,7 +258,7 @@
                   "fileUris": [
                     "https://github.com/leifhh/ARMGIN/blob/master/GinsaGroup/CustomScripts/postgresinstall.ps1"
                   ],
-                  "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File postgresinstall.ps1"
+                  "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted  -file postgresinstall.ps1',' -User ',parameters('PostgressUsername'),' -Password ',parameters('PostgressPassword'))]"
                 }
               }
           }
