@@ -15,6 +15,7 @@
     },
     "GinasDatabaseServerName": {
       "type": "string",
+      "defaultValue":"ginasdbsrv",
       "minLength": 1
     },
     "GinasDatabaseServerAdminUserName": {
@@ -35,6 +36,7 @@
       ]
     },
     "GinasAppServerName": {
+      "defaultValue":"ginasappsrv",
       "type": "string",
       "minLength": 1
     },
@@ -63,6 +65,18 @@
       "type": "string",
       "defaultValue": "North Europe",
       "allowedValues": [ "East US", "West US", "West Europe", "North Europe", "East Asia", "Southeast Asia" ]
+    },
+    "RdpPort": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 4,
+      "defaultValue": "3309"
+    },
+    "WebPort": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 4,
+      "defaultValue": "443"
     }
   },
   "variables": {
@@ -88,10 +102,12 @@
     "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
     "GIWEBStorageAccountContainerName": "vhds",
     "GIWEBNicName": "[concat(parameters('GinasAppServerName'), 'NetworkInterface')]",
-    "WEBName": "WEB"
+    "WEBName": "WEB",
+    "NGSwebsec": "GAPSecR"
 
   },
   "resources": [
+
     {
       "name": "[tolower(variables('Gl01Name'))]",
       "type": "Microsoft.Storage/storageAccounts",
@@ -125,6 +141,7 @@
             "name": "[variables('GINetSubnet1Name')]",
             "properties": {
               "addressPrefix": "[variables('GINetSubnet1Prefix')]"
+
             }
           },
           {
@@ -136,6 +153,7 @@
         ]
       }
     },
+
     {
       "name": "[variables('GIDBsrvNicName')]",
       "type": "Microsoft.Network/networkInterfaces",
@@ -155,23 +173,11 @@
               "privateIPAddress": "10.0.0.4",
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('GIDBsrvSubnetRef')]"
+                "id": "[variables('GIDBsrvSubnetRef')]",
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NGSwebsec'))]"
+                }
               }
-            }
-          }
-        ],
-        "securityRules": [
-          {
-            "name": "default-allow-rdp",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1000,
-              "direction": "Inbound"
             }
           }
         ]
@@ -253,34 +259,8 @@
               }
             }
           }
-        ],
-        "securityRules": [
-          {
-            "name": "allow-443-inbound-any",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "443",
-              "sourceAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1100,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "default-allow-rdp",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1000,
-              "direction": "Inbound"
-            }
-          }
         ]
+
       }
     },
     {
@@ -344,8 +324,45 @@
           "domainNameLabel": "[toLower(parameters('ExternalDnsName'))]"
         }
       }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('NGSwebsec')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "rdp-rule",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('RdpPort')]",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1000,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-443-inbound-any",
+            "properties": {
+              "description": "Allow webtrafic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('WebPort')]",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
     }
-
   ],
   "outputs": {
   }

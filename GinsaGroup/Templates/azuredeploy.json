@@ -77,7 +77,26 @@
       "minLength": 2,
       "maxLength": 4,
       "defaultValue": "443"
-    }
+    },
+      "_artifactsLocation": {
+          "type": "string",
+          "metadata": {
+              "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+          }
+      },
+      "_artifactsLocationSasToken": {
+          "type": "securestring",
+          "metadata": {
+              "description": "Auto-generated token to access _artifactsLocation"
+          }
+      },
+      "projectName": {
+          "type": "string",
+          "minLength": 1,
+          "metadata": {
+              "description": "Name of this project"
+          }
+      }
   },
   "variables": {
     "Gl01Name": "[concat('ginas', uniqueString(resourceGroup().id))]",
@@ -103,7 +122,9 @@
     "GIWEBStorageAccountContainerName": "vhds",
     "GIWEBNicName": "[concat(parameters('GinasAppServerName'), 'NetworkInterface')]",
     "WEBName": "WEB",
-    "NGSwebsec": "GAPSecR"
+    "NGSwebsec": "GAPSecR",
+      "postgresinstallScriptFolder": "[concat(parameters('projectName'), '/', 'CustomScripts')]",
+      "postgresinstallScriptFileName": "postgresinstall.ps1"
 
   },
   "resources": [
@@ -229,6 +250,30 @@
         }
       },
       "resources": [
+          {
+              "name": "postgresinstall",
+              "type": "extensions",
+              "location": "[resourceGroup().location]",
+              "apiVersion": "2015-06-15",
+              "dependsOn": [
+                  "[concat('Microsoft.Compute/virtualMachines/', parameters('GinasDatabaseServerName'))]"
+              ],
+              "tags": {
+                  "displayName": "postgresinstall"
+              },
+              "properties": {
+                  "publisher": "Microsoft.Compute",
+                  "type": "CustomScriptExtension",
+                  "typeHandlerVersion": "1.4",
+                  "autoUpgradeMinorVersion": true,
+                  "settings": {
+                      "fileUris": [
+                          "[concat(parameters('_artifactsLocation'), '/', variables('postgresinstallScriptFolder'), '/', variables('postgresinstallScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                      ],
+                      "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('postgresinstallScriptFolder'), '/', variables('postgresinstallScriptFileName'))]"
+                  }
+              }
+          }
 
       ]
     },
