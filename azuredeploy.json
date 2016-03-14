@@ -1,8 +1,8 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
   "parameters": {
-    "Gl01Type": {
+    "GinasStorageType": {
       "type": "string",
       "defaultValue": "Standard_LRS",
       "allowedValues": [
@@ -13,18 +13,18 @@
         "Premium_LRS"
       ]
     },
-    "GIDBsrvName": {
+    "GinasDatabaseServerName": {
       "type": "string",
       "minLength": 1
     },
-    "GIDBsrvAdminUserName": {
+    "GinasDatabaseServerAdminUserName": {
       "type": "string",
       "minLength": 1
     },
-    "GIDBsrvAdminPassword": {
+    "GinasDatabaseServerAdminPassword": {
       "type": "securestring"
     },
-    "GIDBsrvWindowsOSVersion": {
+    "GinasDatabaseServerOSVersion": {
       "type": "string",
       "defaultValue": "2012-R2-Datacenter",
       "allowedValues": [
@@ -34,18 +34,18 @@
         "Windows-Server-Technical-Preview"
       ]
     },
-    "GIWEBName": {
+    "GinasAppServerName": {
       "type": "string",
       "minLength": 1
     },
-    "GIWEBAdminUserName": {
+    "GinasAppServerAdminUserName": {
       "type": "string",
       "minLength": 1
     },
-    "GIWEBAdminPassword": {
+    "GinasAppServerAdminPassword": {
       "type": "securestring"
     },
-    "GIWEBWindowsOSVersion": {
+    "GinasAppServerOsVersion": {
       "type": "string",
       "defaultValue": "2012-R2-Datacenter",
       "allowedValues": [
@@ -55,42 +55,42 @@
         "Windows-Server-Technical-Preview"
       ]
     },
-    "WEBDnsName": {
+    "ExternalDnsName": {
       "type": "string",
       "minLength": 1
     },
     "siteLocation": {
       "type": "string",
       "defaultValue": "North Europe",
-      "allowedValues": [ "East US", "West US", "West Europe", "Noth Europe", "East Asia", "Southeast Asia" ]
+      "allowedValues": [ "East US", "West US", "West Europe", "North Europe", "East Asia", "Southeast Asia" ]
     }
   },
-    "variables": {
-        "Gl01Name": "[concat('ginas', uniqueString(resourceGroup().id))]",
-        "GINetPrefix": "10.0.0.0/16",
-        "GINetSubnet1Name": "Subnet-1",
-        "GINetSubnet1Prefix": "10.0.0.0/24",
-        "GINetSubnet2Name": "Subnet-2",
-        "GINetSubnet2Prefix": "10.0.1.0/24",
-        "GIDBsrvImagePublisher": "MicrosoftWindowsServer",
-        "GIDBsrvImageOffer": "WindowsServer",
-        "GIDBsrvOSDiskName": "GIDBsrvOSDisk",
-        "GIDBsrvVmSize": "Standard_D1",
-        "GIDBsrvVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
-        "GIDBsrvSubnetRef": "[concat(variables('GIDBsrvVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
-        "GIDBsrvStorageAccountContainerName": "vhds",
-        "GIDBsrvNicName": "[concat(parameters('GIDBsrvName'), 'NetworkInterface')]",
-        "GIWEBImagePublisher": "MicrosoftWindowsServer",
-        "GIWEBImageOffer": "WindowsServer",
-        "GIWEBOSDiskName": "GIWEBOSDisk",
-        "GIWEBVmSize": "Standard_D1",
-        "GIWEBVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
-        "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
-        "GIWEBStorageAccountContainerName": "vhds",
-        "GIWEBNicName": "[concat(parameters('GIWEBName'), 'NetworkInterface')]",
-      "WEBName": "WEB",
-        
-    },
+  "variables": {
+    "Gl01Name": "[concat('ginas', uniqueString(resourceGroup().id))]",
+    "GINetPrefix": "10.0.0.0/16",
+    "GINetSubnet1Name": "Subnet-1",
+    "GINetSubnet1Prefix": "10.0.0.0/24",
+    "GINetSubnet2Name": "Subnet-2",
+    "GINetSubnet2Prefix": "10.0.1.0/24",
+    "GIDBsrvImagePublisher": "MicrosoftWindowsServer",
+    "GIDBsrvImageOffer": "WindowsServer",
+    "GIDBsrvOSDiskName": "GIDBsrvOSDisk",
+    "GIDBsrvVmSize": "Standard_D1",
+    "GIDBsrvVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
+    "GIDBsrvSubnetRef": "[concat(variables('GIDBsrvVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
+    "GIDBsrvStorageAccountContainerName": "vhds",
+    "GIDBsrvNicName": "[concat(parameters('GinasDatabaseServerName'), 'NetworkInterface')]",
+    "GIWEBImagePublisher": "MicrosoftWindowsServer",
+    "GIWEBImageOffer": "WindowsServer",
+    "GIWEBOSDiskName": "GIWEBOSDisk",
+    "GIWEBVmSize": "Standard_D1",
+    "GIWEBVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
+    "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
+    "GIWEBStorageAccountContainerName": "vhds",
+    "GIWEBNicName": "[concat(parameters('GinasAppServerName'), 'NetworkInterface')]",
+    "WEBName": "WEB"
+
+  },
   "resources": [
     {
       "name": "[tolower(variables('Gl01Name'))]",
@@ -102,7 +102,7 @@
         "displayName": "ginasstorage"
       },
       "properties": {
-        "accountType": "[parameters('Gl01Type')]"
+        "accountType": "[parameters('GinasStorageType')]"
       }
     },
     {
@@ -178,7 +178,7 @@
       }
     },
     {
-      "name": "[parameters('GIDBsrvName')]",
+      "name": "[parameters('GinasDatabaseServerName')]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
@@ -194,15 +194,15 @@
           "vmSize": "[variables('GIDBsrvVmSize')]"
         },
         "osProfile": {
-          "computerName": "[parameters('GIDBsrvName')]",
-          "adminUsername": "[parameters('GIDBsrvAdminUsername')]",
-          "adminPassword": "[parameters('GIDBsrvAdminPassword')]"
+          "computerName": "[parameters('GinasDatabaseServerName')]",
+          "adminUsername": "[parameters('GinasDatabaseServerAdminUserName')]",
+          "adminPassword": "[parameters('GinasDatabaseServerAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('GIDBsrvImagePublisher')]",
             "offer": "[variables('GIDBsrvImageOffer')]",
-            "sku": "[parameters('GIDBsrvWindowsOSVersion')]",
+            "sku": "[parameters('GinasDatabaseServerOSVersion')]",
             "version": "latest"
           },
           "osDisk": {
@@ -284,7 +284,7 @@
       }
     },
     {
-      "name": "[parameters('GIWEBName')]",
+      "name": "[parameters('GinasAppServerName')]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
@@ -300,15 +300,15 @@
           "vmSize": "[variables('GIWEBVmSize')]"
         },
         "osProfile": {
-          "computerName": "[parameters('GIWEBName')]",
-          "adminUsername": "[parameters('GIWEBAdminUsername')]",
-          "adminPassword": "[parameters('GIWEBAdminPassword')]"
+          "computerName": "[parameters('GinasAppServerName')]",
+          "adminUsername": "[parameters('GinasAppServerAdminUserName')]",
+          "adminPassword": "[parameters('GinasAppServerAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('GIWEBImagePublisher')]",
             "offer": "[variables('GIWEBImageOffer')]",
-            "sku": "[parameters('GIWEBWindowsOSVersion')]",
+            "sku": "[parameters('GinasAppServerOsVersion')]",
             "version": "latest"
           },
           "osDisk": {
@@ -341,7 +341,7 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[toLower(parameters('WEBDnsName'))]"
+          "domainNameLabel": "[toLower(parameters('ExternalDnsName'))]"
         }
       }
     }
