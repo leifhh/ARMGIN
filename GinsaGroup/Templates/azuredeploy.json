@@ -15,6 +15,7 @@
     },
     "GinasDatabaseServerName": {
       "type": "string",
+      "defaultValue":"ginasdbsrv",
       "minLength": 1
     },
     "GinasDatabaseServerAdminUserName": {
@@ -35,6 +36,7 @@
       ]
     },
     "GinasAppServerName": {
+      "defaultValue":"ginasappsrv",
       "type": "string",
       "minLength": 1
     },
@@ -110,44 +112,7 @@
 
   },
   "resources": [
-    {
-      "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('NetworkSecurityGroupName')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "securityRules": [
-          {
-            "name": "rdp-rule",
-            "properties": {
-              "description": "Allow RDP",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('RdpPort')]",
-              "sourceAddressPrefix": "Internet",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "allow-443-inbound-any",
-            "properties": {
-              "description": "Allow webtrafic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('WebPort')]",
-              "sourceAddressPrefix": "Internet",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 101,
-              "direction": "Inbound"
-            }
-          }
-        ]
-      }
-    },
+
     {
       "name": "[tolower(variables('Gl01Name'))]",
       "type": "Microsoft.Storage/storageAccounts",
@@ -363,8 +328,45 @@
           "domainNameLabel": "[toLower(parameters('ExternalDnsName'))]"
         }
       }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('NetworkSecurityGroupName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "rdp-rule",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('RdpPort')]",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-443-inbound-any",
+            "properties": {
+              "description": "Allow webtrafic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('WebPort')]",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
     }
-
   ],
   "outputs": {
   }
