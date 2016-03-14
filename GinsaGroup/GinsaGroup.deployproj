@@ -34,6 +34,7 @@
     </None>
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
     <Content Include="Templates\t.json" />
+    <None Include="README.MD" />
     <None Include="Templates\azuredeploy.json" />
   </ItemGroup>
   <ItemGroup>
