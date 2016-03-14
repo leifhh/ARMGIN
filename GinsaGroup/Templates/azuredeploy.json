@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "Gl01Type": {
+    "GinasStorageType": {
       "type": "string",
       "defaultValue": "Standard_LRS",
       "allowedValues": [
@@ -13,18 +13,18 @@
         "Premium_LRS"
       ]
     },
-    "GIDBsrvName": {
+    "GinasDatabaseServerName": {
       "type": "string",
       "minLength": 1
     },
-    "GIDBsrvAdminUserName": {
+    "GinasDatabaseServerAdminUserName": {
       "type": "string",
       "minLength": 1
     },
-    "GIDBsrvAdminPassword": {
+    "GinasDatabaseServerAdminPassword": {
       "type": "securestring"
     },
-    "GIDBsrvWindowsOSVersion": {
+    "GinasDatabaseServerOSVersion": {
       "type": "string",
       "defaultValue": "2012-R2-Datacenter",
       "allowedValues": [
@@ -34,18 +34,18 @@
         "Windows-Server-Technical-Preview"
       ]
     },
-    "GIWEBName": {
+    "GinasAppServerName": {
       "type": "string",
       "minLength": 1
     },
-    "GIWEBAdminUserName": {
+    "GinasAppServerAdminUserName": {
       "type": "string",
       "minLength": 1
     },
-    "GIWEBAdminPassword": {
+    "GinasAppServerAdminPassword": {
       "type": "securestring"
     },
-    "GIWEBWindowsOSVersion": {
+    "GinasAppServerOsVersion": {
       "type": "string",
       "defaultValue": "2012-R2-Datacenter",
       "allowedValues": [
@@ -55,7 +55,7 @@
         "Windows-Server-Technical-Preview"
       ]
     },
-    "WEBDnsName": {
+    "ExternalDnsName": {
       "type": "string",
       "minLength": 1
     },
@@ -79,7 +79,7 @@
     "GIDBsrvVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
     "GIDBsrvSubnetRef": "[concat(variables('GIDBsrvVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
     "GIDBsrvStorageAccountContainerName": "vhds",
-    "GIDBsrvNicName": "[concat(parameters('GIDBsrvName'), 'NetworkInterface')]",
+    "GIDBsrvNicName": "[concat(parameters('GinasDatabaseServerName'), 'NetworkInterface')]",
     "GIWEBImagePublisher": "MicrosoftWindowsServer",
     "GIWEBImageOffer": "WindowsServer",
     "GIWEBOSDiskName": "GIWEBOSDisk",
@@ -87,11 +87,50 @@
     "GIWEBVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
     "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
     "GIWEBStorageAccountContainerName": "vhds",
-    "GIWEBNicName": "[concat(parameters('GIWEBName'), 'NetworkInterface')]",
-    "WEBName": "WEB"
+    "GIWEBNicName": "[concat(parameters('GinasAppServerName'), 'NetworkInterface')]",
+    "WEBName": "WEB",
+    "NGSwebsec": "GinasAPPsecRules"
 
   },
   "resources": [
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "variables('NGSwebsec'))",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "rdp-rule",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "6000",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-443-inbound-any",
+            "properties": {
+              "description": "Allow HTTPS",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "[tolower(variables('Gl01Name'))]",
       "type": "Microsoft.Storage/storageAccounts",
@@ -102,7 +141,7 @@
         "displayName": "ginasstorage"
       },
       "properties": {
-        "accountType": "[parameters('Gl01Type')]"
+        "accountType": "[parameters('GinasStorageType')]"
       }
     },
     {
@@ -124,8 +163,10 @@
           {
             "name": "[variables('GINetSubnet1Name')]",
             "properties": {
-              "addressPrefix": "[variables('GINetSubnet1Prefix')]"
-            }
+              "addressPrefix": "[variables('GINetSubnet1Prefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('NGSwebsec'))]"
+              }
           },
           {
             "name": "[variables('GINetSubnet2Name')]",
@@ -159,26 +200,11 @@
               }
             }
           }
-        ],
-        "securityRules": [
-          {
-            "name": "default-allow-rdp",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1000,
-              "direction": "Inbound"
-            }
-          }
         ]
       }
     },
     {
-      "name": "[parameters('GIDBsrvName')]",
+      "name": "[parameters('GinasDatabaseServerName')]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
@@ -194,15 +220,15 @@
           "vmSize": "[variables('GIDBsrvVmSize')]"
         },
         "osProfile": {
-          "computerName": "[parameters('GIDBsrvName')]",
-          "adminUsername": "[parameters('GIDBsrvAdminUsername')]",
-          "adminPassword": "[parameters('GIDBsrvAdminPassword')]"
+          "computerName": "[parameters('GinasDatabaseServerName')]",
+          "adminUsername": "[parameters('GinasDatabaseServerAdminUserName')]",
+          "adminPassword": "[parameters('GinasDatabaseServerAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('GIDBsrvImagePublisher')]",
             "offer": "[variables('GIDBsrvImageOffer')]",
-            "sku": "[parameters('GIDBsrvWindowsOSVersion')]",
+            "sku": "[parameters('GinasDatabaseServerOSVersion')]",
             "version": "latest"
           },
           "osDisk": {
@@ -254,37 +280,11 @@
             }
           }
         ],
-        "securityRules": [
-          {
-            "name": "allow-443-inbound-any",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "443",
-              "sourceAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1100,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "default-allow-rdp",
-            "properties": {
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1000,
-              "direction": "Inbound"
-            }
-          }
-        ]
+       
       }
     },
     {
-      "name": "[parameters('GIWEBName')]",
+      "name": "[parameters('GinasAppServerName')]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
@@ -300,15 +300,15 @@
           "vmSize": "[variables('GIWEBVmSize')]"
         },
         "osProfile": {
-          "computerName": "[parameters('GIWEBName')]",
-          "adminUsername": "[parameters('GIWEBAdminUsername')]",
-          "adminPassword": "[parameters('GIWEBAdminPassword')]"
+          "computerName": "[parameters('GinasAppServerName')]",
+          "adminUsername": "[parameters('GinasAppServerAdminUserName')]",
+          "adminPassword": "[parameters('GinasAppServerAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('GIWEBImagePublisher')]",
             "offer": "[variables('GIWEBImageOffer')]",
-            "sku": "[parameters('GIWEBWindowsOSVersion')]",
+            "sku": "[parameters('GinasAppServerOsVersion')]",
             "version": "latest"
           },
           "osDisk": {
@@ -341,7 +341,7 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[toLower(parameters('WEBDnsName'))]"
+          "domainNameLabel": "[toLower(parameters('ExternalDnsName'))]"
         }
       }
     }
