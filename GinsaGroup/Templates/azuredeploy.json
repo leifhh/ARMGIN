@@ -89,7 +89,7 @@
     "GIWEBStorageAccountContainerName": "vhds",
     "GIWEBNicName": "[concat(parameters('GinasAppServerName'), 'NetworkInterface')]",
     "WEBName": "WEB",
-    "NGSwebsec": "GinasAPPsecRules"
+    "NGSwebsec": "GAPSecR"
 
   },
   "resources": [
@@ -164,7 +164,8 @@
             "name": "[variables('GINetSubnet1Name')]",
             "properties": {
               "addressPrefix": "[variables('GINetSubnet1Prefix')]",
-              "networkSecurityGroup": {
+              "networkSecurityGroup": 
+              {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('NGSwebsec'))]"
               }
             }
