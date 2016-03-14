@@ -167,6 +167,7 @@
               "networkSecurityGroup": {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('NGSwebsec'))]"
               }
+            }
           },
           {
             "name": "[variables('GINetSubnet2Name')]",
