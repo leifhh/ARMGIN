@@ -77,26 +77,8 @@
       "minLength": 2,
       "maxLength": 4,
       "defaultValue": "443"
-    },
-      "_artifactsLocation": {
-          "type": "string",
-          "metadata": {
-              "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
-          }
-      },
-      "_artifactsLocationSasToken": {
-          "type": "securestring",
-          "metadata": {
-              "description": "Auto-generated token to access _artifactsLocation"
-          }
-      },
-      "projectName": {
-          "type": "string",
-          "minLength": 1,
-          "metadata": {
-              "description": "Name of this project"
-          }
-      }
+    }
+
   },
   "variables": {
     "Gl01Name": "[concat('ginas', uniqueString(resourceGroup().id))]",
@@ -122,9 +104,7 @@
     "GIWEBStorageAccountContainerName": "vhds",
     "GIWEBNicName": "[concat(parameters('GinasAppServerName'), 'NetworkInterface')]",
     "WEBName": "WEB",
-    "NGSwebsec": "GAPSecR",
-      "postgresinstallScriptFolder": "[concat(parameters('projectName'), '/', 'CustomScripts')]",
-      "postgresinstallScriptFileName": "postgresinstall.ps1"
+    "NGSwebsec": "GAPSecR"
 
   },
   "resources": [
@@ -266,12 +246,12 @@
                   "type": "CustomScriptExtension",
                   "typeHandlerVersion": "1.4",
                   "autoUpgradeMinorVersion": true,
-                  "settings": {
-                      "fileUris": [
-                          "[concat(parameters('_artifactsLocation'), '/', variables('postgresinstallScriptFolder'), '/', variables('postgresinstallScriptFileName'), parameters('_artifactsLocationSasToken'))]"
-                      ],
-                      "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('postgresinstallScriptFolder'), '/', variables('postgresinstallScriptFileName'))]"
-                  }
+                "settings": {
+                  "fileUris": [
+                    "https://github.com/leifhh/ARMGIN/blob/master/GinsaGroup/CustomScripts/postgresinstall.ps1"
+                  ],
+                  "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File postgresinstall.ps1"
+                }
               }
           }
 
