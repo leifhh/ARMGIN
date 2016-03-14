@@ -77,11 +77,6 @@
       "minLength": 2,
       "maxLength": 4,
       "defaultValue": "443"
-    },
-    "NetworkSecurityGroupName": {
-      "type": "string",
-      "defaultValue": "WebSecurityRules"
-
     }
   },
   "variables": {
@@ -145,10 +140,8 @@
           {
             "name": "[variables('GINetSubnet1Name')]",
             "properties": {
-              "addressPrefix": "[variables('GINetSubnet1Prefix')]",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('NetworkSecurityGroupName'))]"
-              }
+              "addressPrefix": "[variables('GINetSubnet1Prefix')]"
+
             }
           },
           {
@@ -180,7 +173,10 @@
               "privateIPAddress": "10.0.0.4",
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('GIDBsrvSubnetRef')]"
+                "id": "[variables('GIDBsrvSubnetRef')]",
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('NGSwebsec'))]"
+                }
               }
             }
           }
@@ -332,7 +328,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('NetworkSecurityGroupName')]",
+      "name": "[variables('NGSwebsec')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -346,7 +342,7 @@
               "sourceAddressPrefix": "Internet",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 100,
+              "priority": 1000,
               "direction": "Inbound"
             }
           },
@@ -360,7 +356,7 @@
               "sourceAddressPrefix": "Internet",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 101,
+              "priority": 1100,
               "direction": "Inbound"
             }
           }
