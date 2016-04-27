@@ -457,8 +457,7 @@
       "properties": { }
     },
     {
-      "apiVersion": "2015-11-10",
-      "name": "[concat(parameters('BackupVaultName'), '/', parameters('policyName'))]",
+      "name": "[concat(parameters('BackupVaultName'),'/',parameters('policyName'))]",
       "type": "Microsoft.RecoveryServices/vaults/backupPolicies",
       "dependsOn": [ "[concat('Microsoft.RecoveryServices/vaults/', parameters('BackupVaultName'))]" ],
       "location": "[resourceGroup().location]",
