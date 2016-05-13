@@ -37,6 +37,10 @@
         "Windows-Server-Technical-Preview"
       ]
     },
+    "GiDbsrvVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A3"
+    },
     "GinasAppServerName": {
       "defaultValue": "ginasappsrv",
       "type": "string",
@@ -60,6 +64,10 @@
         "2012-R2-Datacenter",
         "Windows-Server-Technical-Preview"
       ]
+    },
+        "GiWebVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A3"
     },
     "ExternalDnsName": {
       "type": "string",
@@ -88,14 +96,6 @@
       "metadata": {
         "description": "Name of the Vault"
       }
-    },
-    "GIWEBVmSize": {
-      "type": "string",
-      "defaultValue": "Standard_D1"
-    },
-    "GIDBsrvVmSize": {
-      "type": "string",
-      "defaultValue": "Standard_D1"
     }
   },
   "variables": {
