@@ -88,8 +88,15 @@
       "metadata": {
         "description": "Name of the Vault"
       }
+    },
+    "GIWEBVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D1"
+    },
+    "GIDBsrvVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D1"
     }
-
   },
   "variables": {
     "Gl01Name": "[concat('ginas', uniqueString(resourceGroup().id))]",
@@ -101,7 +108,6 @@
     "GIDBsrvImagePublisher": "MicrosoftWindowsServer",
     "GIDBsrvImageOffer": "WindowsServer",
     "GIDBsrvOSDiskName": "GIDBsrvOSDisk",
-    "GIDBsrvVmSize": "Standard_D1",
     "GIDBsrvVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
     "GIDBsrvSubnetRef": "[concat(variables('GIDBsrvVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
     "GIDBsrvStorageAccountContainerName": "vhds",
@@ -109,7 +115,6 @@
     "GIWEBImagePublisher": "MicrosoftWindowsServer",
     "GIWEBImageOffer": "WindowsServer",
     "GIWEBOSDiskName": "GIWEBOSDisk",
-    "GIWEBVmSize": "Standard_D1",
     "GIWEBVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'GINet')]",
     "GIWEBSubnetRef": "[concat(variables('GIWEBVnetID'), '/subnets/', variables('GINetSubnet1Name'))]",
     "GIWEBStorageAccountContainerName": "vhds",
@@ -210,7 +215,7 @@
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('GIDBsrvVmSize')]"
+          "vmSize": "[parameters('GIDBsrvVmSize')]"
         },
         "osProfile": {
           "computerName": "[parameters('GinasDatabaseServerName')]",
@@ -290,7 +295,7 @@
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('GIWEBVmSize')]"
+          "vmSize": "[parameters('GIWEBVmSize')]"
         },
         "osProfile": {
           "computerName": "[parameters('GinasAppServerName')]",
