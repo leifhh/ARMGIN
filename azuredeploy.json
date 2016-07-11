@@ -39,7 +39,7 @@
     },
     "GiDbsrvVmSize": {
       "type": "string",
-      "defaultValue": "Standard_A3"
+      "defaultValue": "Standard_D1_v1"
     },
     "GinasAppServerName": {
       "defaultValue": "ginasappsrv",
@@ -67,7 +67,7 @@
     },
         "GiWebVmSize": {
       "type": "string",
-      "defaultValue": "Standard_A3"
+      "defaultValue": "Standard_D3_v2"
     },
     "ExternalDnsName": {
       "type": "string",
